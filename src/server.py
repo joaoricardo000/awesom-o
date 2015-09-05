@@ -1,3 +1,12 @@
+"""
+    This is the server starter.
+
+    It has all Yowsup core layers to handle the connection, encryption and media handling.
+    https://github.com/tgalal/yowsup/wiki/Yowsup-2.0-Architecture
+
+    The top layer of the stack is the RouteLayer (from route.py).
+    It also imports the phone/whatsapp credentials from config.py
+"""
 from yowsup.layers import YowLayerEvent, YowParallelLayer
 from yowsup.layers.auth import YowAuthenticationProtocolLayer, AuthError
 from yowsup.layers.network import YowNetworkLayer
@@ -10,6 +19,7 @@ from yowsup.layers.axolotl import YowAxolotlLayer
 from yowsup.stacks import YowStack, YOWSUP_CORE_LAYERS
 
 from router import RouteLayer
+import logging
 
 
 class YowsupEchoStack(object):
@@ -24,22 +34,28 @@ class YowsupEchoStack(object):
                   YowAxolotlLayer,
                   ) + YOWSUP_CORE_LAYERS
         self.stack = YowStack(layers)
+        self.credentials = credentials
         self.stack.setCredentials(credentials)
 
     def start(self):
+        "Starts the connection with Whatsapp servers,"
         self.stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
         try:
-            logging.info("Iniciando server...")
+            logging.info("#" * 50)
+            logging.info("Server started. Phone number: %s" % self.credentials[0])
+            logging.info("#" * 50)
             self.stack.loop()
         except AuthError as e:
-            print("Authentication Error: %s" % e.message)
+            logging.exception("Authentication Error: %s" % e.message)
 
 
 if __name__ == "__main__":
-    from config import auth
-    import logging
+    import sys
+    import config
 
-    logging.basicConfig(level=logging.INFO)
-    server = YowsupEchoStack(auth)
+    logging.basicConfig(stream=sys.stdout, level=config.logging_level, format=config.log_format)
+    server = YowsupEchoStack(config.auth)
     while True:
+        # In case of disconnect, keeps connecting...
         server.start()
+        logging.info("Restarting..")

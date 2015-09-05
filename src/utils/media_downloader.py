@@ -15,13 +15,14 @@ import requests
 import shutil
 import hashlib
 import re
+import config
 from pytube import YouTube
 
 logger = logging.getLogger(__name__)
 
 
 class MediaSender():
-    def __init__(self, interface_layer, storage_path="/tmp/"):
+    def __init__(self, interface_layer, storage_path=config.media_storage_path):
         self.interface_layer = interface_layer
         self.storage_path = storage_path
         self.file_extension_regex = re.compile("\.([0-9a-z]+)($|\?[^\s]*$)")
@@ -84,14 +85,14 @@ class MediaSender():
 
 
 class VideoSender(MediaSender):
-    def __init__(self, interface_layer, storage_path="/tmp/"):
-        MediaSender.__init__(self, interface_layer, storage_path)
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
         self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_VIDEO
 
 
 class ImageSender(MediaSender):
-    def __init__(self, interface_layer, storage_path="/tmp/"):
-        MediaSender.__init__(self, interface_layer, storage_path)
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
         self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_IMAGE
 
 
