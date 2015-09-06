@@ -32,7 +32,7 @@
     -- NOVO CHIP --
 
 """
-auth = ("554898627861", "j1M3Ieoox0FI6WRZNlsFCr7NJvg=")
+auth = ("554898603087", "oB1UKQ74WSmZhnyaHWW4YnS2A+8=")
 
 # Path to download the media requests
 media_storage_path = "/tmp/"
