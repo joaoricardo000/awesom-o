@@ -29,9 +29,13 @@ class MediaSender():
         self.MEDIA_TYPE = None
 
     def send_by_url(self, jid, file_url):
-        self.interface_layer.toLower(TextMessageProtocolEntity("{ baixando [%s]... }" % self.MEDIA_TYPE, to=jid))
-        file_path = self._download_file(file_url)
-        self.send_file_by_path(jid, file_path)
+        try:
+            self.interface_layer.toLower(TextMessageProtocolEntity("{ baixando [%s]... }" % self.MEDIA_TYPE, to=jid))
+            file_path = self._download_file(file_url)
+            self.send_file_by_path(jid, file_path)
+        except Exception as e:
+            logging.exception(e)
+            self._on_error(jid)
 
     def send_file_by_path(self, jid, path):
         entity = RequestUploadIqProtocolEntity(self.MEDIA_TYPE, filePath=path)
@@ -60,17 +64,17 @@ class MediaSender():
                                           callback, self._on_error, self._on_upload_progress, async=True)
             mediaUploader.start()
 
-    def _doSendFile(self, filePath, url, to, ip=None, caption=None):
+    def _doSendFile(self, file_path, url, to, ip=None, caption=None):
         entity = None
         if self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_VIDEO:
-            entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(filePath, url, self.MEDIA_TYPE, ip, to)
+            entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, self.MEDIA_TYPE, ip, to)
         elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_IMAGE:
-            entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(filePath, url, ip, to, caption=caption)
+            entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, ip, to, caption=caption)
         self.interface_layer.toLower(entity)
 
     def _on_upload_progress(self, filePath, jid, url, progress):
-        sys.stdout.write("%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
-        sys.stdout.flush()
+        if progress % 25 == 0:
+            logging.info("[Upload progress]%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
 
     def _on_error(self, jid, *args, **kwargs):
         error_message = "{! foi mal, deu erro com [%s]... }" % self.MEDIA_TYPE
@@ -102,7 +106,10 @@ class YoutubeSender(VideoSender):
         if not os.path.isfile(file_path):
             yt = YouTube()
             yt.from_url("http://youtube.com/watch?v=" + video_id)
-            yt.filter('mp4')[0].download(file_path)
+            video = yt.filter('mp4')[0]
+            logging.info(video)
+            logging.info(file_path)
+            video.download(file_path)
         return file_path
 
     def _build_file_path(self, video_id):
