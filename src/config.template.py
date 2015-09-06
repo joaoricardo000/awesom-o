@@ -11,18 +11,16 @@
     Then whatsapp will send a key via sms to the phone.
     Get that key then run:
 
-    > yowsup-cli registration -C 55 -R <sms-key> -p 554898603087
-
-    INFO:yowsup.common.http.warequest:{"status":"ok","login":"554898603087","pw":"njH+QGBqGxvbPP8YOFa+Wth5riM=","type":"existing","expiration":1472404969,"kind":"free","price":"US$0.99","cost":"0.99","currency":"USD","price_expiration":1444272405}
+    > yowsup-cli registration -C 55 -R <sms-key> -p 554899998888
 
     status: ok
     kind: free
-    > pw: njH+QGBqGxvbPP8YOFa+Wth5riM=
+    > pw: njH+QGBqGXXXXXXXOFa+Wth5riM=
     price: US$0.99
     price_expiration: 1444272405
     currency: USD
     cost: 0.99
-    > login: 554898603087
+    > login: 554899998888
     type: existing
     expiration: 1472404969
 
@@ -32,7 +30,7 @@
     -- NOVO CHIP --
 
 """
-auth = ("554898603087", "oB1UKQ74WSmZhnyaHWW4YnS2A+8=")
+auth = ("login", "pw")
 
 # Path to download the media requests
 media_storage_path = "/tmp/"
