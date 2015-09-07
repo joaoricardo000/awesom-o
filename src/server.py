@@ -10,6 +10,7 @@
 from yowsup.layers import YowLayerEvent, YowParallelLayer
 from yowsup.layers.auth import YowAuthenticationProtocolLayer, AuthError
 from yowsup.layers.network import YowNetworkLayer
+from yowsup.layers.protocol_groups.layer import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages import YowMessagesProtocolLayer
 from yowsup.layers.protocol_media import YowMediaProtocolLayer
 from yowsup.layers.protocol_receipts import YowReceiptProtocolLayer
@@ -26,6 +27,7 @@ class YowsupEchoStack(object):
     def __init__(self, credentials):
         layers = (RouteLayer,
                   YowParallelLayer([YowAuthenticationProtocolLayer,
+                                    YowGroupsProtocolLayer,
                                     YowMessagesProtocolLayer,
                                     YowReceiptProtocolLayer,
                                     YowAckProtocolLayer,

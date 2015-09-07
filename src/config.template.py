@@ -39,3 +39,5 @@ import logging
 
 log_format = '_%(filename)s_\t[%(levelname)s][%(asctime)-15s] %(message)s'
 logging_level = logging.INFO
+
+BASE_LOCATIONCODE = "5548"

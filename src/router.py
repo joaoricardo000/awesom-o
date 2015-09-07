@@ -3,6 +3,7 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
+from views.group_admin import GroupAdmin
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -26,11 +27,13 @@ class RouteLayer(YowInterfaceLayer):
         """
         super(RouteLayer, self).__init__()
 
-        views_media_download = ViewsMedia(self)
         routes = [("^/ping", views.ping),
                   ("^/eco(?P<eco_message>[^$]+)$", views.echo),
-                  ("^/piada\s*$", views.get_piada),
-                  ] + views_media_download.routes  # Adds the auto download media callbacks
+                  ("^/piada\s*$", views.get_piada)]
+
+        routes.extend(ViewsMedia(self).routes)
+        routes.extend(GroupAdmin(self).routes)
+
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 
     @ProtocolEntityCallback("message")
@@ -50,8 +53,11 @@ class RouteLayer(YowInterfaceLayer):
         for route, callback in self.views:
             match = route.match(text)
             if match:  # in case of regex match, the callback is called, passing the message and the match object
-                data = callback(message, match)
-                if data: self.toLower(data)  # if callback returns a message entity, sends it.
+                try:
+                    data = callback(message, match)
+                    if data: self.toLower(data)  # if callback returns a message entity, sends it.
+                except Exception as e:
+                    logging.exception("Erro no roteamento da mensagem %s" % text)
                 break
 
     @ProtocolEntityCallback("receipt")
