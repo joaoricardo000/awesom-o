@@ -3,16 +3,15 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
-from views.group_admin import GroupAdmin
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
+from views import views
+from views.downloads import MediaViews
+from views.group_admin import GroupAdminViews
+
 import threading
 import re
-
-from views import views
-from views.downloads import ViewsMedia
-
 import logging
 
 
@@ -31,8 +30,8 @@ class RouteLayer(YowInterfaceLayer):
                   ("^/eco(?P<eco_message>[^$]+)$", views.echo),
                   ("^/piada\s*$", views.get_piada)]
 
-        routes.extend(ViewsMedia(self).routes)
-        routes.extend(GroupAdmin(self).routes)
+        routes.extend(MediaViews(self).routes)
+        routes.extend(GroupAdminViews(self).routes)
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 
@@ -43,8 +42,7 @@ class RouteLayer(YowInterfaceLayer):
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
         if message.getType() == 'text':
             # Route the message on a new thread to not block the others messages (probably needs performance enhance)
-            self.route(message)
-            # threading.Thread(target=self.route, args=(message,)).start()
+            threading.Thread(target=self.route, args=(message,)).start()
 
     def route(self, message):
         "Get the text from message and tests on every route for a match"

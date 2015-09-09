@@ -6,7 +6,7 @@ from yowsup.layers.protocol_groups.protocolentities.iq_groups_participants_remov
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 
 
-class GroupAdmin():
+class GroupAdminViews():
     """
         Group Administration Views
 
