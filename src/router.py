@@ -31,7 +31,7 @@ class RouteLayer(YowInterfaceLayer):
                   ("^/piada\s*$", views.get_piada)]
 
         routes.extend(MediaViews(self).routes)
-        routes.extend(GroupAdminViews(self).routes)
+        # routes.extend(GroupAdminViews(self).routes)
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 
