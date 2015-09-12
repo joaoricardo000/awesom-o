@@ -3,3 +3,4 @@ argparse==1.2.1
 pytube==0.3.0
 requests==2.7.0
 yowsup2==2.3.185
+gTTS==1.0.6

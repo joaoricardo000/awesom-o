@@ -6,6 +6,8 @@ from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_im
     ImageDownloadableMediaMessageProtocolEntity
 from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_video import \
     VideoDownloadableMediaMessageProtocolEntity
+from yowsup.layers.protocol_media.protocolentities.message_media_downloadable_audio import \
+    AudioDownloadableMediaMessageProtocolEntity
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 
 import subprocess
@@ -18,6 +20,7 @@ import hashlib
 import re
 import config
 from pytube import YouTube
+from gtts import gTTS
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +74,8 @@ class MediaSender():
             entity = VideoDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, self.MEDIA_TYPE, ip, to)
         elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_IMAGE:
             entity = ImageDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, ip, to, caption=caption)
+        elif self.MEDIA_TYPE == DownloadableMediaMessageProtocolEntity.MEDIA_TYPE_AUDIO:
+            entity = AudioDownloadableMediaMessageProtocolEntity.fromFilePath(file_path, url, ip, to)
         self.interface_layer.toLower(entity)
 
     def _on_upload_progress(self, filePath, jid, url, progress):
@@ -129,3 +134,29 @@ class UrlPrintSender(ImageSender):
     def _build_file_path(self, page_url):
         id = hashlib.md5(page_url).hexdigest()
         return ''.join([self.storage_path, id, time.strftime("%d_%m_%H_%M"), ".jpeg"])
+
+
+class GoogleTtsSender(MediaSender):
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
+        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_AUDIO
+
+    def send(self, jid, text):
+        try:
+            self.interface_layer.toLower(TextMessageProtocolEntity("{ Gravando... }", to=jid))
+            file_path = self._download_file(text)
+            self.send_file_by_path(jid, file_path)
+        except Exception as e:
+            logging.exception(e)
+            self._on_error(jid)
+
+    def _download_file(self, text):
+        file_path = self._build_file_path(text)
+        if not os.path.isfile(file_path):
+            tts = gTTS(text=text, lang="pt-BR")
+            tts.save(file_path)
+        return file_path
+
+    def _build_file_path(self, text):
+        id = hashlib.md5(text).hexdigest()
+        return ''.join([self.storage_path, id, ".mp3"])

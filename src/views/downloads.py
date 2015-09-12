@@ -3,7 +3,7 @@
 
     Handles the media url messages with utilities classes for it.
 """
-from utils.media_downloader import ImageSender, VideoSender, YoutubeSender, UrlPrintSender
+from utils.media_downloader import ImageSender, VideoSender, YoutubeSender, UrlPrintSender, GoogleTtsSender
 
 
 class MediaViews():
@@ -15,12 +15,13 @@ class MediaViews():
         self.video_sender = VideoSender(interface_layer)
         self.yt_sender = YoutubeSender(interface_layer)
         self.url_print_sender = UrlPrintSender(interface_layer)
+        self.google_tts_sender = GoogleTtsSender(interface_layer)
         self.routes = [
             ("https?:\/\/(?:[\w\-]+\.)+[a-z]{2,6}(?:\/[^\/#?]+)+\.(?:jpe?g|gif|png)($|\?[^\s]+$)", self.send_image),
             ("https?:\/\/(?:[\w\-]+\.)+[a-z]{2,6}(?:\/[^\/#?]+)+\.(?:mp4|webm)($|\?[^\s]+$)", self.send_video),
             ("https?:\/\/(?:www\.)?youtu(?:be.com\/watch\?v=|\.be/)(?P<video_id>[\w-]+)(&\S*)?$", self.send_yt_video),
-            ("https?:\/\/(?:www\.)?[^$]+$", self.send_url_print)
-
+            ("https?:\/\/(?:www\.)?[^$]+$", self.send_url_print),
+            ("/gravar\s(?P<text>.{1,300})$", self.send_tts)
         ]
 
     def send_video(self, message, match):
@@ -34,3 +35,6 @@ class MediaViews():
 
     def send_url_print(self, message, match):
         self.url_print_sender.send_by_url(jid=message.getFrom(), file_url=message.getBody())
+
+    def send_tts(self, message, match):
+        self.google_tts_sender.send(jid=message.getFrom(), text=match.group("text"))
