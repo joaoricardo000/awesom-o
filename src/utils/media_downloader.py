@@ -141,19 +141,21 @@ class GoogleTtsSender(MediaSender):
         MediaSender.__init__(self, interface_layer)
         self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_AUDIO
 
-    def send(self, jid, text):
+    def send(self, jid, text, lang=None):
+        if not (lang and lang in gTTS.LANGUAGES):
+            lang = "pt-br"
         try:
             self.interface_layer.toLower(TextMessageProtocolEntity("{ Gravando... }", to=jid))
-            file_path = self._download_file(text)
+            file_path = self.tts_record(text, lang)
             self.send_file_by_path(jid, file_path)
         except Exception as e:
             logging.exception(e)
             self._on_error(jid)
 
-    def _download_file(self, text):
+    def tts_record(self, text, lang):
         file_path = self._build_file_path(text)
         if not os.path.isfile(file_path):
-            tts = gTTS(text=text, lang="pt-BR")
+            tts = gTTS(text=text, lang=lang)
             tts.save(file_path)
         return file_path
 

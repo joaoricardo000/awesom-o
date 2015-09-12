@@ -7,7 +7,7 @@
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
 from views import views
-from views.downloads import MediaViews
+from views.media import MediaViews
 from views.group_admin import GroupAdminViews
 
 import threading

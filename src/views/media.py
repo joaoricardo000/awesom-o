@@ -21,7 +21,7 @@ class MediaViews():
             ("https?:\/\/(?:[\w\-]+\.)+[a-z]{2,6}(?:\/[^\/#?]+)+\.(?:mp4|webm)($|\?[^\s]+$)", self.send_video),
             ("https?:\/\/(?:www\.)?youtu(?:be.com\/watch\?v=|\.be/)(?P<video_id>[\w-]+)(&\S*)?$", self.send_yt_video),
             ("https?:\/\/(?:www\.)?[^$]+$", self.send_url_print),
-            ("/gravar\s(?P<text>.{1,300})$", self.send_tts)
+            ("/gravar\s(?P<text>[^\[]{1,500})\s?\[?(?P<lang>[A-Za-z\-]{2,6})?\]?$", self.send_tts)
         ]
 
     def send_video(self, message, match):
@@ -37,4 +37,4 @@ class MediaViews():
         self.url_print_sender.send_by_url(jid=message.getFrom(), file_url=message.getBody())
 
     def send_tts(self, message, match):
-        self.google_tts_sender.send(jid=message.getFrom(), text=match.group("text"))
+        self.google_tts_sender.send(jid=message.getFrom(), text=match.group("text"), lang=match.group("lang"))
