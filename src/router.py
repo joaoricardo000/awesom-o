@@ -38,6 +38,7 @@ class RouteLayer(YowInterfaceLayer):
     @ProtocolEntityCallback("message")
     def on_message(self, message):
         "Executes on every received message"
+        self.toLower(message.ack())  # Auto ack (double blue check symbol)
         self.toLower(message.ack(True))  # Auto ack (double blue check symbol)
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
         if message.getType() == 'text':
