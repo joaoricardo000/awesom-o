@@ -35,6 +35,24 @@ class RouteLayer(YowInterfaceLayer):
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
 
+    def route(self, message):
+        "Get the text from message and tests on every route for a match"
+        text = message.getBody()
+        for route, callback in self.views:
+            match = route.match(text)
+            if match:  # in case of regex match, the callback is called, passing the message and the match object
+                threading.Thread(target=self.handle_callback, args=(callback, message, match)).start()
+                break
+
+    def handle_callback(self, callback, message, match):
+        logging.info("Threads: %s" % threading.active_count())
+        try:
+            logging.info("[%s][%s]\t%s" % (message.getParticipant(), message.getFrom(), message.getBody()))
+            data = callback(message, match)
+            if data: self.toLower(data)  # if callback returns a message entity, sends it.
+        except Exception as e:
+            logging.exception("Erro no roteamento da mensagem %s" % message)
+
     @ProtocolEntityCallback("message")
     def on_message(self, message):
         "Executes on every received message"
@@ -43,21 +61,7 @@ class RouteLayer(YowInterfaceLayer):
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
         if message.getType() == 'text':
             # Route the message on a new thread to not block the others messages (probably needs performance enhance)
-            threading.Thread(target=self.route, args=(message,)).start()
-
-    def route(self, message):
-        "Get the text from message and tests on every route for a match"
-        text = message.getBody()
-        logging.info("[%s]\t%s" % (message.getFrom(), text))
-        for route, callback in self.views:
-            match = route.match(text)
-            if match:  # in case of regex match, the callback is called, passing the message and the match object
-                try:
-                    data = callback(message, match)
-                    if data: self.toLower(data)  # if callback returns a message entity, sends it.
-                except Exception as e:
-                    logging.exception("Erro no roteamento da mensagem %s" % text)
-                break
+            self.route(message)
 
     @ProtocolEntityCallback("receipt")
     def on_receipt(self, entity):
