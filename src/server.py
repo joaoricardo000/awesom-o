@@ -19,7 +19,7 @@ from yowsup.layers.protocol_iq import YowIqProtocolLayer
 from yowsup.layers.axolotl import YowAxolotlLayer
 from yowsup.stacks import YowStack, YOWSUP_CORE_LAYERS
 
-from router import RouteLayer
+from route_layer import RouteLayer
 import logging
 
 
