@@ -3,6 +3,7 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
+from layers.router.views.static import StaticViews
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -13,8 +14,6 @@ from views.group_admin import GroupAdminViews
 import threading
 import re
 import logging
-from yowsup.layers.protocol_groups.protocolentities.iq_groups_list import ListGroupsIqProtocolEntity
-from yowsup.layers.protocol_groups.protocolentities.iq_result_groups_list import ListGroupsResultIqProtocolEntity
 
 
 class RouteLayer(YowInterfaceLayer):
@@ -29,10 +28,11 @@ class RouteLayer(YowInterfaceLayer):
         super(RouteLayer, self).__init__()
 
         routes = [("^/ping", views.ping),
-                  ("^/eco(?P<eco_message>[^$]+)$", views.echo),
-                  ("^/piada\s*$", views.get_piada)]
+                  ("^/e(co)?(?P<eco_message>[^$]+)$", views.echo),
+                  ("^/p(iada)?\s*$", views.get_piada)]
 
         routes.extend(MediaViews(self).routes)
+        routes.extend(StaticViews(self).routes)
         # routes.extend(GroupAdminViews(self).routes)
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
@@ -50,8 +50,8 @@ class RouteLayer(YowInterfaceLayer):
         logging.info("Threads: %s" % threading.active_count())
         try:
             logging.info("[%s][%s]\t%s" % (message.getParticipant(), message.getFrom(), message.getBody()))
-            # data = callback(message, match)
-            # if data: self.toLower(data)  # if callback returns a message entity, sends it.
+            data = callback(message, match)
+            if data: self.toLower(data)  # if callback returns a message entity, sends it.
         except Exception as e:
             logging.exception("Erro no roteamento da mensagem %s" % message)
 
@@ -61,23 +61,8 @@ class RouteLayer(YowInterfaceLayer):
         self.toLower(message.ack())  # Auto ack (double blue check symbol)
         self.toLower(message.ack(True))  # Auto ack (double blue check symbol)
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
-        if "96270570@" in message.getFrom() and "list" in message.getBody():
-            logging.info("[%s][%s]\t%s" % (message.getParticipant(), message.getFrom(), message.getBody()))
-            self.toLower(ListGroupsIqProtocolEntity())
-        elif message.getType() == 'text':
-            # Route the message on a new thread to not block the others messages (probably needs performance enhance)
-            # pass
+        if message.getType() == 'text':
             self.route(message)
-
-    @ProtocolEntityCallback("iq")
-    def onIq(self, entity):
-        if entity.__class__.__name__ == ListGroupsResultIqProtocolEntity.__name__:
-            groups = entity.getGroups()
-            for g in groups:
-                logging.info(g.getId())
-                logging.info(g.getSubject())
-                for jid, isAdmin in g.getParticipants().iteritems():
-                    logging.info("%s - %s" % (jid, bool(isAdmin)))
 
     @ProtocolEntityCallback("receipt")
     def on_receipt(self, entity):

@@ -1,6 +1,6 @@
 import random
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
-from resources import piadas
+from layers.router.resources import piadas
 
 
 def get_piada(message, match):

@@ -32,6 +32,9 @@
 """
 auth = ("login", "pw")
 
+admins = ["XXXXXXXXXXXX", ]
+admins = ["%s@s.whatsapp.net" % a for a in admins]
+
 # Path to download the media requests
 media_storage_path = "/tmp/"
 
