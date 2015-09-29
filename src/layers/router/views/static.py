@@ -18,6 +18,7 @@ class StaticViews():
         self.routes = [
             # ("^/oi", self.oi),
             ("^/folha", self.folha),
+            ("^/ajuda", self.ajuda),
             ("^/g1", self.g1),
             ("^/ge", self.ge),
             ("^/rola", self.rola),
@@ -47,6 +48,28 @@ Para ver como posso te ajudar, me envie:
 Beijos no coração.
         """
         self.interface_layer.toLower(TextMessageProtocolEntity(to=to, body=welcome_text))
+
+    def ajuda(self, message=None, match=None, to=None):
+        ajuda_text = """ [Ajuda]
+- Comandos
+/ajuda - Mostra esse texto
+/b(usca) - Busca do Google
+/gira - Girar o peão
+/g(ravar) - Gravar um texto
+/i(magem) - Busca de imagem do Google
+/(im)par - Jogo de par ou impar
+/p(iada) - Piada!
+/ping - Pong
+/s(erie)[a-d] - Tabela do Brasileirao
+
+- Jornais:
+/g1
+/folha
+
+- Download de urls do YouTube, imagens e videos.
+- Print screen de urls
+"""
+        return TextMessageProtocolEntity(ajuda_text, to=message.getFrom())
 
     def g1(self, message=None, match=None, to=None):
         to = to or message.getFrom()
