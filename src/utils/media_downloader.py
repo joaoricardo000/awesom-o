@@ -34,7 +34,7 @@ class MediaSender():
 
     def send_by_url(self, jid, file_url):
         try:
-            self.interface_layer.toLower(TextMessageProtocolEntity("{ baixando [%s]... }" % self.MEDIA_TYPE, to=jid))
+            self.interface_layer.toLower(TextMessageProtocolEntity("{...}", to=jid))
             file_path = self._download_file(file_url)
             self.send_file_by_path(jid, file_path)
         except Exception as e:
@@ -83,8 +83,7 @@ class MediaSender():
             logging.info("[Upload progress]%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
 
     def _on_error(self, jid, *args, **kwargs):
-        error_message = "{! foi mal, deu erro com [%s]... }" % self.MEDIA_TYPE
-        self.interface_layer.toLower(TextMessageProtocolEntity(error_message, to=jid))
+        self.interface_layer.toLower(TextMessageProtocolEntity("{!}", to=jid))
 
     def _get_file_ext(self, url):
         return self.file_extension_regex.findall(url)[0][0]
@@ -95,6 +94,12 @@ class MediaSender():
 
 
 class VideoSender(MediaSender):
+    def __init__(self, interface_layer):
+        MediaSender.__init__(self, interface_layer)
+        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_VIDEO
+
+
+class AudioSender(MediaSender):
     def __init__(self, interface_layer):
         MediaSender.__init__(self, interface_layer)
         self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_VIDEO
@@ -124,28 +129,24 @@ class YoutubeSender(VideoSender):
 
 class UrlPrintSender(ImageSender):
     def _download_file(self, page_url):
+        page_url = page_url.replace('"', "'")
         file_path = self._build_file_path(page_url)
         if not os.path.isfile(file_path):
-            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1500 "%s" %s' % (page_url, file_path)
+            cmd = 'wkhtmltoimage --load-error-handling ignore --height 1600 "%s" %s' % (page_url, file_path)
             p = subprocess.Popen(cmd, shell=True)
             p.wait()
         return file_path
 
     def _build_file_path(self, page_url):
         id = hashlib.md5(page_url).hexdigest()
-        return ''.join([self.storage_path, id, time.strftime("%d_%m_%H_%M"), ".jpeg"])
+        return ''.join([self.storage_path, id, str(int(time.time()))[:-2], ".jpeg"])
 
 
-class GoogleTtsSender(MediaSender):
-    def __init__(self, interface_layer):
-        MediaSender.__init__(self, interface_layer)
-        self.MEDIA_TYPE = RequestUploadIqProtocolEntity.MEDIA_TYPE_AUDIO
-
+class GoogleTtsSender(AudioSender):
     def send(self, jid, text, lang=None):
         if not (lang and lang in gTTS.LANGUAGES):
             lang = "pt-br"
         try:
-            self.interface_layer.toLower(TextMessageProtocolEntity("{ Gravando... }", to=jid))
             file_path = self.tts_record(text, lang)
             self.send_file_by_path(jid, file_path)
         except Exception as e:

@@ -7,36 +7,24 @@
     The top layer of the stack is the RouteLayer (from route.py).
     It also imports the phone/whatsapp credentials from config.py
 """
-from yowsup.layers import YowLayerEvent, YowParallelLayer
-from yowsup.layers.auth import YowAuthenticationProtocolLayer, AuthError
-from yowsup.layers.network import YowNetworkLayer
-from yowsup.layers.protocol_groups.layer import YowGroupsProtocolLayer
-from yowsup.layers.protocol_messages import YowMessagesProtocolLayer
-from yowsup.layers.protocol_media import YowMediaProtocolLayer
-from yowsup.layers.protocol_receipts import YowReceiptProtocolLayer
-from yowsup.layers.protocol_acks import YowAckProtocolLayer
-from yowsup.layers.protocol_iq import YowIqProtocolLayer
-from yowsup.layers.axolotl import YowAxolotlLayer
-from yowsup.stacks import YowStack, YOWSUP_CORE_LAYERS
-
-from router import RouteLayer
 import logging
+from layers.groups.yowlayer import GroupLayer
+
+from yowsup.layers import YowLayerEvent, YowParallelLayer
+from yowsup.layers.auth import AuthError
+from yowsup.layers.network import YowNetworkLayer
+from yowsup.stacks.yowstack import YowStackBuilder
+from layers.router.yowlayer import RouteLayer
+from layers.web.yowlayer import WebLayer
 
 
 class YowsupEchoStack(object):
     def __init__(self, credentials):
-        layers = (RouteLayer,
-                  YowParallelLayer([YowAuthenticationProtocolLayer,
-                                    YowGroupsProtocolLayer,
-                                    YowMessagesProtocolLayer,
-                                    YowReceiptProtocolLayer,
-                                    YowAckProtocolLayer,
-                                    YowMediaProtocolLayer,
-                                    YowIqProtocolLayer]),
-                  YowAxolotlLayer,
-                  ) + YOWSUP_CORE_LAYERS
-        self.stack = YowStack(layers)
         self.credentials = credentials
+        stack_builder = YowStackBuilder().pushDefaultLayers(True)
+        stack_builder.push(YowParallelLayer([RouteLayer, GroupLayer]))
+        # stack_builder.push(YowParallelLayer([RouteLayer, WebLayer, GroupLayer]))
+        self.stack = stack_builder.build()
         self.stack.setCredentials(credentials)
 
     def start(self):
@@ -46,7 +34,7 @@ class YowsupEchoStack(object):
             logging.info("#" * 50)
             logging.info("Server started. Phone number: %s" % self.credentials[0])
             logging.info("#" * 50)
-            self.stack.loop()
+            self.stack.loop(timeout=0.5, discrete=0.5)
         except AuthError as e:
             logging.exception("Authentication Error: %s" % e.message)
 

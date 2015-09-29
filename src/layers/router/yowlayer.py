@@ -3,6 +3,7 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
+from layers.router.views.static import StaticViews
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -27,10 +28,11 @@ class RouteLayer(YowInterfaceLayer):
         super(RouteLayer, self).__init__()
 
         routes = [("^/ping", views.ping),
-                  ("^/eco(?P<eco_message>[^$]+)$", views.echo),
-                  ("^/piada\s*$", views.get_piada)]
+                  ("^/e(co)?(?P<eco_message>[^$]+)$", views.echo),
+                  ("^/p(iada)?\s*$", views.get_piada)]
 
         routes.extend(MediaViews(self).routes)
+        routes.extend(StaticViews(self).routes)
         # routes.extend(GroupAdminViews(self).routes)
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
@@ -60,7 +62,6 @@ class RouteLayer(YowInterfaceLayer):
         self.toLower(message.ack(True))  # Auto ack (double blue check symbol)
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
         if message.getType() == 'text':
-            # Route the message on a new thread to not block the others messages (probably needs performance enhance)
             self.route(message)
 
     @ProtocolEntityCallback("receipt")
