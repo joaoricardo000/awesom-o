@@ -4,7 +4,7 @@
     Handles the media url messages with utilities classes for it.
 """
 from utils.media_downloader import ImageSender, VideoSender, YoutubeSender, UrlPrintSender, GoogleTtsSender
-import requests
+import requests, urllib
 
 
 class MediaViews():
@@ -44,11 +44,10 @@ class MediaViews():
 
     def google_search(self, message, match):
         req = requests.get("http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s" % match.group("term"))
-        page_url = req.json()["responseData"]["results"][0]["url"]
-        print page_url
+        page_url = urllib.unquote(req.json()["responseData"]["results"][0]["url"])
         self.url_print_sender.send_by_url(jid=message.getFrom(), file_url=page_url)
 
     def google_image_search(self, message, match):
         req = requests.get("http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=%s" % match.group("term"))
-        image_url = req.json()["responseData"]["results"][0]["url"]
+        image_url = urllib.unquote(req.json()["responseData"]["results"][0]["url"])
         self.image_sender.send_by_url(jid=message.getFrom(), file_url=image_url)
