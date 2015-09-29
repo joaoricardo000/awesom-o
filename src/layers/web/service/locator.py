@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 
 class ServiceLocator:
@@ -10,11 +10,11 @@ class ServiceLocator:
     def set_web_layer(self, web_layer):
         self.web_layer = web_layer
 
-    def get_db_collection(self):
-        if not self.collection:
-            self.connection = MongoClient('localhost', 27017)
-            self.collection = self.connection.whatsapp
-        return self.collection
+    # def get_db_collection(self):
+    #     if not self.collection:
+    #         self.connection = MongoClient('localhost', 27017)
+    #         self.collection = self.connection.whatsapp
+    #     return self.collection
 
 
 Instance = ServiceLocator()
