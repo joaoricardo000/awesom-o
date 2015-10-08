@@ -1,4 +1,5 @@
 # awesome-o
+[![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/auchenberg/volkswagen)  
 My personal whatsapp-bot.
 All new bot features on this projects will be then updated to https://github.com/janusnic/whatsapp-bot-seed
 
