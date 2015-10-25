@@ -48,14 +48,6 @@ class StaticViews():
         return TextMessageProtocolEntity("Giraaandooo... [%d]" % random.randint(1, 6), to=to)
 
     def par(self, message=None, match=None, to=None):
-        impar = match.group("im")
-        num = random.randint(1, 10)
-        if (impar and not num % 2) or (not impar and num % 2):
-            return TextMessageProtocolEntity("[%d]\nERRROOOOOOOUU!" % num, to=message.getFrom())
-        else:
-            return TextMessageProtocolEntity("[%d]\nuau, parabéns..." % num, to=message.getFrom())
-
-    def even_or_odd(self, message=None, match=None, to=None):
         is_odd = bool(match.group("im"))
         num = random.randint(1, 10)
         lost = not ((is_odd and num % 2) or (not is_odd and not num % 2))
