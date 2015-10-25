@@ -22,8 +22,6 @@ import config
 from pytube import YouTube
 from gtts import gTTS
 
-logger = logging.getLogger(__name__)
-
 
 class MediaSender():
     def __init__(self, interface_layer, storage_path=config.media_storage_path):
@@ -32,19 +30,19 @@ class MediaSender():
         self.file_extension_regex = re.compile("\.([0-9a-z]+)($|\?[^\s]*$)")
         self.MEDIA_TYPE = None
 
-    def send_by_url(self, jid, file_url):
+    def send_by_url(self, jid, file_url, caption=None):
         try:
             self.interface_layer.toLower(TextMessageProtocolEntity("{...}", to=jid))
             file_path = self._download_file(file_url)
-            self.send_file_by_path(jid, file_path)
+            self.send_file_by_path(jid, file_path, caption)
         except Exception as e:
             logging.exception(e)
             self._on_error(jid)
 
-    def send_file_by_path(self, jid, path):
+    def send_file_by_path(self, jid, path, caption=None):
         entity = RequestUploadIqProtocolEntity(self.MEDIA_TYPE, filePath=path)
         success_callback = lambda successEntity, originalEntity: self._on_upload_result(jid, path, successEntity,
-                                                                                        originalEntity)
+                                                                                        originalEntity, caption)
         err_callback = lambda errorEntity, originalEntity: self._on_error(jid)
         self.interface_layer._sendIq(entity, success_callback, err_callback)
 
@@ -57,11 +55,11 @@ class MediaSender():
             del response
         return file_path
 
-    def _on_upload_result(self, jid, file_path, upload_result, requestUploadIqProtocolEntity):
+    def _on_upload_result(self, jid, file_path, upload_result, requestUploadIqProtocolEntity, caption=None):
         if upload_result.isDuplicate():
-            self._doSendFile(file_path, upload_result.getUrl(), jid, upload_result.getIp())
+            self._doSendFile(file_path, upload_result.getUrl(), jid, upload_result.getIp(), caption)
         else:
-            callback = lambda file_path, jid, url: self._doSendFile(file_path, url, jid, upload_result.getIp())
+            callback = lambda file_path, jid, url: self._doSendFile(file_path, url, jid, upload_result.getIp(), caption)
             mediaUploader = MediaUploader(jid, self.interface_layer.getOwnJid(), file_path,
                                           upload_result.getUrl(),
                                           upload_result.getResumeOffset(),
@@ -79,7 +77,7 @@ class MediaSender():
         self.interface_layer.toLower(entity)
 
     def _on_upload_progress(self, filePath, jid, url, progress):
-        if progress % 25 == 0:
+        if progress == 100:
             logging.info("[Upload progress]%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
 
     def _on_error(self, jid, *args, **kwargs):
@@ -118,8 +116,6 @@ class YoutubeSender(VideoSender):
             yt = YouTube()
             yt.from_url("http://youtube.com/watch?v=" + video_id)
             video = yt.filter('mp4')[0]
-            logging.info(video)
-            logging.info(file_path)
             video.download(file_path)
         return file_path
 
