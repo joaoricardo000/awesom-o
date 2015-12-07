@@ -1,3 +1,4 @@
 venv/
 src/config.py
 *.pyc
+losers.data
