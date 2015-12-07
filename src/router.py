@@ -3,17 +3,24 @@
     Here the message is routed to its proper view.
     The routes are defined with regular expressions and callback functions (just like any web framework).
 """
-from layers.router.views.static import StaticViews
-
-from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
-
-from views import views
-from views.media import MediaViews
-from views.group_admin import GroupAdminViews
-
 import threading
 import re
 import logging
+
+from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
+
+from views import basic_views
+from views.media import MediaViews
+from views.super_views import SuperViews
+from views.group_admin import GroupAdminViews
+from views.google import GoogleViews
+from views.awesomo_views import AwesomoViews
+
+
+
+# Basic regex routes
+routes = [("^/ping", basic_views.ping),
+          ("^/e(cho)?\s(?P<echo_message>[^$]+)$", basic_views.echo)]
 
 
 class RouteLayer(YowInterfaceLayer):
@@ -27,12 +34,20 @@ class RouteLayer(YowInterfaceLayer):
         """
         super(RouteLayer, self).__init__()
 
-        routes = [("^/ping", views.ping),
-                  ("^/e(co)?(?P<eco_message>[^$]+)$", views.echo),
-                  ("^/p(iada)?\s*$", views.get_piada)]
+        # Google views to handle tts, search and youtube
+        routes.extend(GoogleViews(self).routes)
 
+        # Media views to handle url print screen and media download
         routes.extend(MediaViews(self).routes)
-        routes.extend(StaticViews(self).routes)
+
+        # adds super fun views
+        routes.extend(SuperViews(self).routes)
+
+        routes.extend(AwesomoViews(self).routes)
+
+        # group admin views disabled by default.
+        # read the issue on: https://github.com/joaoricardo000/whatsapp-bot-seed/issues/4
+        # enable on your own risk!
         # routes.extend(GroupAdminViews(self).routes)
 
         self.views = [(re.compile(pattern), callback) for pattern, callback in routes]
@@ -47,18 +62,22 @@ class RouteLayer(YowInterfaceLayer):
                 break
 
     def handle_callback(self, callback, message, match):
-        logging.info("Threads: %s" % threading.active_count())
         try:
-            logging.info("[%s][%s]\t%s" % (message.getParticipant(), message.getFrom(), message.getBody()))
+            # log message request
+            if (message.isGroupMessage()):
+                logging.info("(GROUP)[%s]-[%s]\t%s" % (message.getParticipant(), message.getFrom(), message.getBody()))
+            else:
+                logging.info("(PVT)[%s]\t%s" % (message.getFrom(), message.getBody()))
+            # execute callback request
             data = callback(message, match)
             if data: self.toLower(data)  # if callback returns a message entity, sends it.
         except Exception as e:
-            logging.exception("Erro no roteamento da mensagem %s" % message)
+            logging.exception("Error routing message: %s\n%s" % (message.getBody(), message))
 
     @ProtocolEntityCallback("message")
     def on_message(self, message):
         "Executes on every received message"
-        self.toLower(message.ack())  # Auto ack (double blue check symbol)
+        self.toLower(message.ack())  # Auto ack
         self.toLower(message.ack(True))  # Auto ack (double blue check symbol)
         # Routing only text type messages, for now ignoring other types. (media, audio, location...)
         if message.getType() == 'text':

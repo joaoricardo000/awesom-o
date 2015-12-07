@@ -1,4 +1,3 @@
-import config
 from threading import Timer
 from yowsup.layers.protocol_groups.protocolentities.iq_groups_participants_add import AddParticipantsIqProtocolEntity
 from yowsup.layers.protocol_groups.protocolentities.iq_groups_participants_remove import \
@@ -56,18 +55,15 @@ class GroupAdminViews():
             Check if bot is authorized to add/remove users.
             For now just checks if the message is in group,
             # TO-DO: check if bot is in fact admin!
+            # issue:
         """
         return message.isGroupMessage()
 
     def _get_jid(self, phone_number):
         """
             Build jid based on phone number.
-            If phonenumber does not have country/location code, adds it from the config.
         """
-        p = phone_number
-        if len(p) <= 9:
-            p = config.BASE_LOCATIONCODE + p
-        return "%s@s.whatsapp.net" % p
+        return "%s@s.whatsapp.net" % phone_number
 
     def _remove_user(self, group_jid, user_jid):
         """

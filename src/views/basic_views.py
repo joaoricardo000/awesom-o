@@ -1,14 +1,9 @@
-import random
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
-from layers.router.resources import piadas
-
-
-def get_piada(message, match):
-    return TextMessageProtocolEntity(piadas.get(), to=message.getFrom())
+import random
 
 
 def echo(message, match):
-    return TextMessageProtocolEntity("Eco: %s" % match.group("eco_message"), to=message.getFrom())
+    return TextMessageProtocolEntity("Eco: %s" % match.group("echo_message"), to=message.getFrom())
 
 
 def ping(message, match):
