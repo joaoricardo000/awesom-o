@@ -6,6 +6,7 @@
 import threading
 import re
 import logging
+from views.bing import BingViews
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -39,6 +40,9 @@ class RouteLayer(YowInterfaceLayer):
 
         # Media views to handle url print screen and media download
         routes.extend(MediaViews(self).routes)
+
+        # Bing views to handle image search
+        routes.extend(BingViews(self).routes)
 
         # adds super fun views
         routes.extend(SuperViews(self).routes)

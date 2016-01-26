@@ -1,5 +1,5 @@
 # coding=utf-8
-from utils.media_sender import UrlPrintSender, GoogleTtsSender, AudioSender
+from utils.media_sender import UrlPrintSender, AudioSender
 from yowsup.layers.protocol_messages.protocolentities.message_text import TextMessageProtocolEntity
 import random
 import os
@@ -17,7 +17,6 @@ class AwesomoViews():
             Creates the regex routes and callbacks to handle media messages
         """
         self.interface_layer = interface_layer
-        self.google_tts_sender = GoogleTtsSender(self.interface_layer)
         self.url_print_sender = UrlPrintSender(self.interface_layer)
         self.audio_sender = AudioSender(self.interface_layer)
         self.resource_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "./resources/")
