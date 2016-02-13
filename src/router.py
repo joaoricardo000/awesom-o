@@ -7,6 +7,7 @@ import threading
 import re
 import logging
 from views.bing import BingViews
+from views.quiz import QuizView
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 
@@ -48,6 +49,8 @@ class RouteLayer(YowInterfaceLayer):
         routes.extend(SuperViews(self).routes)
 
         routes.extend(AwesomoViews(self).routes)
+
+        routes.extend(QuizView(self).routes)
 
         # group admin views disabled by default.
         # read the issue on: https://github.com/joaoricardo000/whatsapp-bot-seed/issues/4
