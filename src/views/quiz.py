@@ -1,3 +1,4 @@
+# coding=utf-8
 import config, random
 from utils.session import SessionDB
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
