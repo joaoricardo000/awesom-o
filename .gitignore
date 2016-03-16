@@ -1,4 +1,4 @@
 venv/
-src/config.py
 *.pyc
 losers.data
+default_env

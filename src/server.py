@@ -48,7 +48,4 @@ if __name__ == "__main__":
 
     logging.basicConfig(stream=sys.stdout, level=config.logging_level, format=config.log_format)
     server = YowsupEchoStack(config.auth)
-    while True:
-        # In case of disconnect, keeps connecting...
-        server.start()
-        logging.info("Restarting..")
+    server.start()
